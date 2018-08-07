@@ -53,6 +53,7 @@ class Mapper
 	ros::Publisher outlierPub;
 	ros::Publisher odomPub;
 	ros::Publisher odomErrorPub;
+    ros::Publisher cloudPub;
 	
 	// Services
 	ros::ServiceServer getPointMapSrv;
@@ -70,7 +71,7 @@ class Mapper
 	PM::DataPointsFilters inputFilters;
 	PM::DataPointsFilters mapPreFilters;
 	PM::DataPointsFilters mapPostFilters;
-	PM::DataPoints *mapPointCloud;
+//	PM::DataPoints *mapPointCloud;
 	PM::ICPSequence icp;
 	unique_ptr<PM::Transformation> transformation;
 	
@@ -111,6 +112,7 @@ class Mapper
 public:
 	Mapper(ros::NodeHandle& n, ros::NodeHandle& pn);
 	~Mapper();
+    PM::DataPoints *mapPointCloud; // for saving
 	
 protected:
 	void gotScan(const sensor_msgs::LaserScan& scanMsgIn);
@@ -120,7 +122,6 @@ protected:
 	void setMap(DP* newPointCloud);
 	DP* updateMap(DP* newPointCloud, const PM::TransformationParameters Ticp, bool updateExisting);
 	void waitForMapBuildingCompleted();
-	void debugFeaturesDescriptors(DP newPointCloud);
 	
 	void publishLoop(double publishPeriod);
 	void publishTransform();
@@ -248,10 +249,11 @@ Mapper::Mapper(ros::NodeHandle& n, ros::NodeHandle& pn):
 
 	// topics and services initialization
 	if (getParam<bool>("subscribe_scan", true))
-		scanSub = n.subscribe("scan", inputQueueSize, &Mapper::gotScan, this);
+        scanSub = n.subscribe("/down_laser/scan", inputQueueSize, &Mapper::gotScan, this);
 	if (getParam<bool>("subscribe_cloud", true))
 		cloudSub = n.subscribe("cloud_in", inputQueueSize, &Mapper::gotCloud, this);
 	mapPub = n.advertise<sensor_msgs::PointCloud2>("point_map", 2, true);
+    cloudPub = n.advertise<sensor_msgs::PointCloud2>("pointCloud", 2, true);
 	outlierPub = n.advertise<sensor_msgs::PointCloud2>("outliers", 2, true);
 	odomPub = n.advertise<nav_msgs::Odometry>("icp_odom", 50, true);
 	odomErrorPub = n.advertise<nav_msgs::Odometry>("icp_error_odom", 50, true);
@@ -291,19 +293,34 @@ Mapper::~Mapper()
 
 void Mapper::gotScan(const sensor_msgs::LaserScan& scanMsgIn)
 {
-	ROS_INFO("Got scan!");
 	if(localizing)
-	{
+    {
+//        cout<<"------------------------------------------------------"<<endl;
+//        cout<<"angle min:   "<<scanMsgIn.angle_min<<endl;
+//        cout<<"angle max:   "<<scanMsgIn.angle_max<<endl;
+//        cout<<"angle delta:   "<<scanMsgIn.angle_increment<<endl;
+//        cout<<"time delta:   "<<scanMsgIn.time_increment<<endl;
+//        cout<<"scan time:   "<<scanMsgIn.scan_time<<endl;
+//        cout<<"range min:   "<<scanMsgIn.range_min<<endl;
+//        cout<<"range max:   "<<scanMsgIn.range_max<<endl;
+//        cout<<"laser size:   "<<scanMsgIn.ranges.size()<<endl;
+
 		const ros::Time endScanTime(scanMsgIn.header.stamp + ros::Duration(scanMsgIn.time_increment * (scanMsgIn.ranges.size() - 1)));
-		unique_ptr<DP> cloud(new DP(PointMatcher_ros::rosMsgToPointMatcherCloud<float>(scanMsgIn, &tfListener, odomFrame)));
-        //std::cout << "Number of points: cloud (" << cloud->features.cols() << "), scanIn (" << scanMsgIn.ranges.size() << ")" << std::endl;
-		processCloud(move(cloud), scanMsgIn.header.frame_id, endScanTime, scanMsgIn.header.seq);
+//		unique_ptr<DP> cloud(new DP(PointMatcher_ros::rosMsgToPointMatcherCloud<float>(scanMsgIn, &tfListener, odomFrame)));
+        unique_ptr<DP> cloud(new DP(PointMatcher_ros::rosMsgToPointMatcherCloud<float>(scanMsgIn, &tfListener, odomFrame, false, true, false)));
+//        cout<<cloud->features.cols()<<endl;
+
+//        for(int i=0; i<cloud->features.cols(); i++)
+//        {
+//            cout<<cloud->features(0, i)<<"  "<<cloud->features(1, i)<<endl;
+//        }
+
+        processCloud(move(cloud), odomFrame, endScanTime, scanMsgIn.header.seq);
 	}
 }
 
 void Mapper::gotCloud(const sensor_msgs::PointCloud2& cloudMsgIn)
 {
-	ROS_INFO("Got cloud!");
 	if(localizing)
 	{
 		unique_ptr<DP> cloud(new DP(PointMatcher_ros::rosMsgToPointMatcherCloud<float>(cloudMsgIn)));
@@ -342,11 +359,11 @@ void Mapper::processCloud(unique_ptr<DP> newPointCloud, const std::string& scann
 	const size_t goodCount(newPointCloud->features.cols());
 	if (goodCount == 0)
 	{
-		ROS_ERROR("I found no good points in the cloud [at mapper.cpp]");
+		ROS_ERROR("I found no good points in the cloud");
 		return;
 	}
-	
-	// Dimension of the point cloud, important since we handle 2D and 3D
+
+    // Dimension of the point cloud, important since we handle 2D and 3D
 	const int dimp1(newPointCloud->features.rows());
 
 	ROS_INFO("Processing new point cloud");
@@ -359,6 +376,11 @@ void Mapper::processCloud(unique_ptr<DP> newPointCloud, const std::string& scann
 		ROS_INFO_STREAM("Input filters took " << t.elapsed() << " [s]");
 	}
 	
+//    for(int i=0; i<newPointCloud->features.cols(); i++)
+//    {
+//        cout<<newPointCloud->features(0, i)<<"  "<<newPointCloud->features(1, i)<<endl;
+//    }
+//    cout<<"Points:  "<<newPointCloud->features.cols()<<endl;
 	string reason;
 	// Initialize the transformation to identity if empty
  	if(!icp.hasMap())
@@ -388,14 +410,11 @@ void Mapper::processCloud(unique_ptr<DP> newPointCloud, const std::string& scann
 		return;
 	}
 
-	//Correct TOdomToMap to fit dimp1 (dimension of input data)
-	//We need to do this because we could have called 'CorrectPose' which always returns a [4][4] matrix
-	TOdomToMap = PointMatcher_ros::eigenMatrixToDim<float>(TOdomToMap, dimp1);
 
 	ROS_DEBUG_STREAM("TOdomToScanner(" << odomFrame<< " to " << scannerFrame << "):\n" << TOdomToScanner);
 	ROS_DEBUG_STREAM("TOdomToMap(" << odomFrame<< " to " << mapFrame << "):\n" << TOdomToMap);
 		
- 	const PM::TransformationParameters TscannerToMap = transformation->correctParameters(TOdomToMap * TOdomToScanner.inverse());
+	const PM::TransformationParameters TscannerToMap = transformation->correctParameters(TOdomToMap * TOdomToScanner.inverse());
 	ROS_DEBUG_STREAM("TscannerToMap (" << scannerFrame << " to " << mapFrame << "):\n" << TscannerToMap);
 	
 	// Ensure a minimum amount of point after filtering
@@ -417,25 +436,33 @@ void Mapper::processCloud(unique_ptr<DP> newPointCloud, const std::string& scann
 	}
 	
 	// Check dimension
-	if (newPointCloud->features.rows() != icp.getInternalMap().features.rows())
+	if (newPointCloud->features.rows() != icp.getPrefilteredInternalMap().features.rows())
 	{
-		ROS_ERROR_STREAM("Dimensionality missmatch: incoming cloud is " << newPointCloud->features.rows()-1 << " while map is " << icp.getInternalMap().features.rows()-1);
+		ROS_ERROR_STREAM("Dimensionality missmatch: incoming cloud is " << newPointCloud->features.rows()-1 << " while map is " << icp.getPrefilteredInternalMap().features.rows()-1);
 		return;
 	}
+//    cout<<"Points!!!:  "<<newPointCloud->features.cols()<<endl;
 
-	// Call this function in order to verbose errors when matching the newPointCloud and the icp Internal Map
-	debugFeaturesDescriptors(*newPointCloud);
+    cloudPub.publish(PointMatcher_ros::pointMatcherCloudToRosMsg<float>(*newPointCloud, scannerFrame, ros::Time::now()));
+
+    sensor_msgs::PointCloud2 aa =  PointMatcher_ros::pointMatcherCloudToRosMsg<float>(*newPointCloud, scannerFrame, ros::Time::now());
+//    cout<<"h:  "<<aa.height<<"  w:  "<<aa.width<<endl;
 
 	try 
 	{
 		// Apply ICP
 		PM::TransformationParameters Ticp;
+
 		Ticp = icp(*newPointCloud, TscannerToMap);
 
 		ROS_DEBUG_STREAM("Ticp:\n" << Ticp);
 		
 		// Ensure minimum overlap between scans
 		const double estimatedOverlap = icp.errorMinimizer->getOverlap();
+//        Eigen::Matrix<double , Eigen::Dynamic, Eigen::Dynamic> C;
+        PM::TransformationParameters C = icp.errorMinimizer->getCovariance();
+        cout<<"Cov:"<<endl;
+        cout<<C<<endl;
 		ROS_INFO_STREAM("Overlap: " << estimatedOverlap);
 		if (estimatedOverlap < minOverlap)
 		{
@@ -451,10 +478,10 @@ void Mapper::processCloud(unique_ptr<DP> newPointCloud, const std::string& scann
 		tfBroadcaster.sendTransform(PointMatcher_ros::eigenMatrixToStampedTransform<float>(TOdomToMap, mapFrame, odomFrame, stamp));
 		publishLock.unlock();
 		processingNewCloud = false;
- 		
+		
 		ROS_DEBUG_STREAM("TOdomToMap:\n" << TOdomToMap);
 
- 		// Publish odometry
+		// Publish odometry
 		if (odomPub.getNumSubscribers())
 			odomPub.publish(PointMatcher_ros::eigenMatrixToOdomMsg<float>(Ticp, mapFrame, stamp));
 	
@@ -472,7 +499,7 @@ void Mapper::processCloud(unique_ptr<DP> newPointCloud, const std::string& scann
 		// check if news points should be added to the map
 		if (
 			mapping &&
-			((estimatedOverlap < maxOverlapToMerge) || (icp.getInternalMap().features.cols() < minMapPointCount)) &&
+			((estimatedOverlap < maxOverlapToMerge) || (icp.getPrefilteredInternalMap().features.cols() < minMapPointCount)) &&
 			#if BOOST_VERSION >= 104100
 			(!mapBuildingInProgress)
 			#else // BOOST_VERSION >= 104100
@@ -487,6 +514,7 @@ void Mapper::processCloud(unique_ptr<DP> newPointCloud, const std::string& scann
 			mapBuildingTask = MapBuildingTask(boost::bind(&Mapper::updateMap, this, newPointCloud.release(), Ticp, true));
 			mapBuildingFuture = mapBuildingTask.get_future();
 			mapBuildingThread = boost::thread(boost::move(boost::ref(mapBuildingTask)));
+			mapBuildingThread.detach();
 			mapBuildingInProgress = true;
 			#else // BOOST_VERSION >= 104100
 			ROS_INFO("Adding new points to the map");
@@ -611,7 +639,7 @@ bool Mapper::saveMap(map_msgs::SaveMap::Request &req, map_msgs::SaveMap::Respons
 {
 	if (!mapPointCloud)
 		return false;
-
+	
 	try
 	{
 		mapPointCloud->save(req.filename.data);
@@ -632,63 +660,12 @@ bool Mapper::loadMap(ethzasl_icp_mapper::LoadMap::Request &req, ethzasl_icp_mapp
 	
 	DP* cloud(new DP(DP::load(req.filename.data)));
 
-
-	if(req.use2DMap.data == true)
-	{
-
-		// In order to adapt the features to 2D we need to remove the third component (z axis) from features and featureLabels
-		// We use Eigen::MatrixXf as a template defined in EigenCore for a matrix of float(as DP template is defined) with dynamics rows/cols
-		Eigen::MatrixXf f(3, cloud->features.cols());
-		f.row(0) = cloud->features.row(0);
-		f.row(1) = cloud->features.row(1);
-		f.row(2) = cloud->features.row(3);
-		cloud->features = f;
-
-        DP::Labels fl;
-        fl.push_back(cloud->featureLabels[0]);
-        fl.push_back(cloud->featureLabels[1]);
-        fl.push_back(cloud->featureLabels[3]);
-
-        cloud->featureLabels = fl;
-
-
-        // In order to adapt the descriptors to 2D we need to find all the 3 components vectors and limit them to 2 components
-        unsigned int totalRows = 0;
-        unsigned int indexNewDescriptor = 0;
-
-        DP::Label dl;
-        for(BOOST_AUTO(dl, cloud->descriptorLabels.begin()); dl != cloud->descriptorLabels.end(); dl++)
-        {
-        	if(dl->span == 3)
-        		dl->span = 2;
-
-        	totalRows = totalRows + dl->span;
-        }
-
-        Eigen::MatrixXf d(totalRows, cloud->descriptors.cols());
-
-    	for(BOOST_AUTO(dl, cloud->descriptorLabels.begin()); dl != cloud->descriptorLabels.end(); dl++)
-        {
-        	for(uint j=0; j<dl->span; j++, indexNewDescriptor++)
-        	{
-        		d.row(indexNewDescriptor) = cloud->descriptors.row(cloud->getDescriptorStartingRow(dl->text) + j);
-        	}
-        }
-
-        cloud->descriptors = d;
-
-		
-	}
-
 	const int dim = cloud->features.rows();
 	const int nbPts = cloud->features.cols();
 	ROS_INFO_STREAM("Loading " << dim-1 << "D point cloud (" << req.filename.data << ") with " << nbPts << " points.");
 
 	publishLock.lock();
-	if(req.useTOdomToMap.data == true)
-		TOdomToMap = PointMatcher_ros::odomMsgToEigenMatrix<float>(req.odom);
-	else
-		TOdomToMap = PM::TransformationParameters::Identity(dim,dim);
+	TOdomToMap = PM::TransformationParameters::Identity(dim,dim);
 	publishLock.unlock();
 
 	setMap(cloud);
@@ -709,7 +686,6 @@ bool Mapper::reset(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res
 	
 	return true;
 }
-
 
 bool Mapper::correctPose(ethzasl_icp_mapper::CorrectPose::Request &req, ethzasl_icp_mapper::CorrectPose::Response &res)
 {
@@ -805,62 +781,6 @@ bool Mapper::getBoundedMap(ethzasl_icp_mapper::GetBoundedMap::Request &req, ethz
 	return true;
 }
 
-void Mapper::debugFeaturesDescriptors(DP newPointCloud)
-{
-	uint i = 0;
-
-	if(newPointCloud.features.rows() != icp.getInternalMap().features.rows())
-    {
-        std::cout << "[DEBUG] Feature Rows arent the same" << std::endl;
-        std::cout << "[DEBUG] Feature Rows of newPointCloud is " << newPointCloud.features.rows() << std::endl;
-    	std::cout << "[DEBUG] Feature Rows of internalMap is " << icp.getInternalMap().features.rows() << std::endl;
-    }else if(newPointCloud.features.cols() != icp.getInternalMap().features.cols())
-    {
-        std::cout << "[DEBUG] Feature Cols arent the same" << std::endl;
-    }else if(newPointCloud.featureLabels.size() != icp.getInternalMap().featureLabels.size())
-    {
-        std::cout << "[DEBUG] Feature Labels arent the same" << std::endl;
-        for(i=0; i < newPointCloud.featureLabels.size(); i++){
-			std::cout << "[DEBUG] Field " << i << " of featureLabels of newpointcloud = " << newPointCloud.featureLabels[i].text <<
-				"[" << newPointCloud.featureLabels[i].span << "]" << std::endl;
-		}
-
-		for(i=0; i < icp.getInternalMap().featureLabels.size(); i++){
-			std::cout << "[DEBUG] Field " << i << " of featureLabels of internalMap = " << icp.getInternalMap().featureLabels[i].text <<
-				"[" << icp.getInternalMap().featureLabels[i].span << "]" << std::endl;
-		}
-    }else if(newPointCloud.descriptors.rows() != icp.getInternalMap().descriptors.rows())
-    {
-        std::cout << "[DEBUG] Descriptor Rows arent the same" << std::endl;
-        std::cout << "[DEBUG] Descriptor Rows of newPointCloud is " << newPointCloud.descriptors.rows() << std::endl;
-    	std::cout << "[DEBUG] Descriptor Rows of internalMap is " << icp.getInternalMap().descriptors.rows() << std::endl;
-    	for(i=0; i < newPointCloud.descriptorLabels.size(); i++){
-			std::cout << "[DEBUG] Field " << i << " of descriptorLabels of newpointcloud = " << newPointCloud.descriptorLabels[i].text <<
-				"[" << newPointCloud.descriptorLabels[i].span << "]" << std::endl;
-		}
-
-		for(i=0; i < icp.getInternalMap().descriptorLabels.size(); i++){
-			std::cout << "[DEBUG] Field " << i << " of descriptorLabels of internalMap = " << icp.getInternalMap().descriptorLabels[i].text <<
-				"[" << icp.getInternalMap().descriptorLabels[i].span << "]" << std::endl;
-		}
-    }else if(newPointCloud.descriptors.cols() != icp.getInternalMap().descriptors.cols())
-    {
-        std::cout << "[DEBUG] Descriptor Cols arent the same" << std::endl;
-    }else if(newPointCloud.descriptorLabels.size() != icp.getInternalMap().descriptorLabels.size())
-    {
-        std::cout << "[DEBUG] Descriptor Labels arent the same" << std::endl;
-        for(i=0; i < newPointCloud.descriptorLabels.size(); i++){
-			std::cout << "[DEBUG] Field " << i << " of descriptorLabels of newpointcloud = " << newPointCloud.descriptorLabels[i].text <<
-				"[" << newPointCloud.descriptorLabels[i].span << "]" << std::endl;
-		}
-
-		for(i=0; i < icp.getInternalMap().descriptorLabels.size(); i++){
-			std::cout << "[DEBUG] Field " << i << " of descriptorLabels of internalMap = " << icp.getInternalMap().descriptorLabels[i].text <<
-				"[" << icp.getInternalMap().descriptorLabels[i].span << "]" << std::endl;
-		}
-    }
-}
-
 // Main function supporting the Mapper class
 int main(int argc, char **argv)
 {
@@ -869,6 +789,8 @@ int main(int argc, char **argv)
 	ros::NodeHandle pn("~");
 	Mapper mapper(n, pn);
 	ros::spin();
-	
+
+    mapper.mapPointCloud->save("/home/yh/UTS_2d.vtk");
+
 	return 0;
 }
