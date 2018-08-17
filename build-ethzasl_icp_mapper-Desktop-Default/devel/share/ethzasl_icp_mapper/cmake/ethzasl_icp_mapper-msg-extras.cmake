@@ -1,0 +1,2 @@
+set(ethzasl_icp_mapper_MESSAGE_FILES "")
+set(ethzasl_icp_mapper_SERVICE_FILES "/home/yh/mine_ws/src/ethzasl_icp_mapping/ethzasl_icp_mapper/srv/CorrectPose.srv;/home/yh/mine_ws/src/ethzasl_icp_mapping/ethzasl_icp_mapper/srv/GetBoundedMap.srv;/home/yh/mine_ws/src/ethzasl_icp_mapping/ethzasl_icp_mapper/srv/GetMode.srv;/home/yh/mine_ws/src/ethzasl_icp_mapping/ethzasl_icp_mapper/srv/LoadMap.srv;/home/yh/mine_ws/src/ethzasl_icp_mapping/ethzasl_icp_mapper/srv/MatchClouds.srv;/home/yh/mine_ws/src/ethzasl_icp_mapping/ethzasl_icp_mapper/srv/SetMode.srv")

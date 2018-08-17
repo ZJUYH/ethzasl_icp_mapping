@@ -1,0 +1,18 @@
+<!--
+This launch file is an example for 2D scan matching
+
+It has been parametrized for the PR2 rosbag that can be downloaded at
+wget http://pr.willowgarage.com/data/gmapping/small_loop_prf.bag
+-->
+
+<launch>
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find ethzasl_icp_mapper)/launch/2D_scans/alignment.rviz" output="screen"/>
+	<node name="uts_2d_alignment" type="uts_2d_alignment" pkg="ethzasl_icp_mapper" output="screen" >
+		<param name="mapFilterName" value="$(find ethzasl_icp_mapper)/launch/2D_scans/map_post_filters.yaml"/>
+	<param name="laserFilterName" value="$(find ethzasl_icp_mapper)/launch/2D_scans/laser_filters.yaml"/>
+		<param name="poseFileName" value="/home/yh/uts_2d/Siasun_global_poses.txt"/> 
+		<param name="scanDirName" value="/home/yh/uts_2d/scan/"/> 
+		<param name="saveVTKname" value="/home/yh/uts_2d/Siasun_map.vtk"/>
+		<param name="savePLYname" value="/home/yh/uts_2d/Siasun_map.ply"/>
+	</node>
+</launch>

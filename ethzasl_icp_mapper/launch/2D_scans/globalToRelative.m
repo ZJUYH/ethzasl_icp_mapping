@@ -17,7 +17,7 @@ function [ transformed ] = globalToRelative( savedGlobalPoses )
         if i == 1
             relatives(i, :) = [globalCells{i}(1,:), globalCells{i}(2,:), globalCells{i}(3,:)];
         else
-            relativeM = globalCells{i} * inv(globalCells{i-1});
+            relativeM = inv(globalCells{i}) *globalCells{i-1};
             relatives(i, :) = [relativeM(1,:), relativeM(2,:), relativeM(3,:)];
         end
                     

@@ -1,0 +1,13 @@
+- SurfaceNormalDataPointsFilter:
+    knn: 5
+    keepNormals: 1
+    keepDensities: 1
+- MaxDensityDataPointsFilter:
+    maxDensity: 1000
+- BoundingBoxDataPointsFilter:
+    xMin: -2.2
+    xMax: 2.2
+    yMin: -2.2
+    yMax: 2.2
+    zMin: 0
+    zMax: 0

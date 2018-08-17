@@ -1,0 +1,8 @@
+prefix=/home/yh/mine_ws/src/ethzasl_icp_mapping/build-ethzasl_icp_mapper-Desktop-Default/devel
+
+Name: ethzasl_icp_mapper
+Description: Description of ethzasl_icp_mapper
+Version: 0.9.6
+Cflags: -I/home/yh/mine_ws/src/ethzasl_icp_mapping/build-ethzasl_icp_mapper-Desktop-Default/devel/include
+Libs: -L/home/yh/mine_ws/src/ethzasl_icp_mapping/build-ethzasl_icp_mapper-Desktop-Default/devel/lib 
+Requires: roscpp rospy rosbag std_msgs geometry_msgs nav_msgs tf tf2 tf_conversions message_filters map_msgs libpointmatcher_ros ethzasl_gridmap_2d visualization_msgs interactive_markers message_runtime libpointmatcher
