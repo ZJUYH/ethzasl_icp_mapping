@@ -1,3 +1,7 @@
+```diff
++ Forked from Ethz-asl, used for private research.
+```
+
 **NOTE:** The current branch with the most recent changes is `reintegrate/master_into_indigo_devel`. We are slowly reducing the public support for this stack. It is mainly there for us to try quick demos and as an example of [libpointmatcher](https://github.com/ethz-asl/libpointmatcher) code.
 
 This [ROS] stack provides a real-time 2D and 3D [ICP]-based SLAM system that
