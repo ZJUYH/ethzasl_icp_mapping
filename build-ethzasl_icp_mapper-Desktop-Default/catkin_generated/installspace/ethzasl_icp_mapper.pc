@@ -1,8 +1,0 @@
-prefix=/usr/local
-
-Name: ethzasl_icp_mapper
-Description: Description of ethzasl_icp_mapper
-Version: 0.9.6
-Cflags: -I/usr/local/include
-Libs: -L/usr/local/lib 
-Requires: roscpp rospy rosbag std_msgs geometry_msgs nav_msgs tf tf2 tf_conversions message_filters map_msgs libpointmatcher_ros ethzasl_gridmap_2d visualization_msgs interactive_markers message_runtime libpointmatcher
