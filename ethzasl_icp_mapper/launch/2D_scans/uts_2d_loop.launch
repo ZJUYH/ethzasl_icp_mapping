@@ -8,7 +8,7 @@ wget http://pr.willowgarage.com/data/gmapping/small_loop_prf.bag
 <launch>
 <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ethzasl_icp_mapper)/launch/2D_scans/loop.rviz" output="screen"/>
 	<node name="uts_2d_loop" type="uts_2d_loop" pkg="ethzasl_icp_mapper" output="screen" >
-		<param name="loadMapName" value="/home/yh/uts_2d/scan/3.vtk" />
+		<param name="loadMapName" value="/home/yh/uts_2d/scan/5.vtk" />
 		<param name="loadScanName" value="/home/yh/uts_2d/scan/908.vtk" />
 		<param name="icpYamlName" value="$(find ethzasl_icp_mapper)/launch/2D_scans/icp_loop.yaml" />
         <param name="inputFilterName" value="$(find ethzasl_icp_mapper)/launch/2D_scans/input_filters.yaml"/>

@@ -102,8 +102,6 @@ loop::loop(ros::NodeHandle& n):
         <<Ticp(0,3)<<"         "<<Ticp(1,0)<<"         "<<Ticp(1,1)<<"         "<<Ticp(1,3)
        <<"          "<<0<<"         "<<0<<"         "<<1<<endl;
 
-    cout<<"Overlap:     "<<icp.errorMinimizer->getOverlap()<<endl;
-
     transformation->correctParameters(Ticp);
 
     DP scanCloud_2 = transformation->compute(scanCloud, Ticp);
