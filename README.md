@@ -1,5 +1,5 @@
 ```diff
-+ Forked from Ethz-asl, used for private research.
++ Forked from Ethz-asl, add 2D mapping in University of Technology Sydney.
 ```
 
 **NOTE:** The current branch with the most recent changes is `reintegrate/master_into_indigo_devel`. We are slowly reducing the public support for this stack. It is mainly there for us to try quick demos and as an example of [libpointmatcher](https://github.com/ethz-asl/libpointmatcher) code.
