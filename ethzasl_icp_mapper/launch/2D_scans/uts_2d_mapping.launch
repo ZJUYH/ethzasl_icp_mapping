@@ -23,9 +23,10 @@ wget http://pr.willowgarage.com/data/gmapping/small_loop_prf.bag
 		<param name="minMapPointCount" value="1000" /> 
 		<param name="minReadingPointCount" value="200" /> 
 
-        <param name="saveScanDirName" value="/home/yh/uts_2d/scan/"/>
+        <param name="saveScanDirName" value="/home/yh/uts_2d/test/"/>
         <param name="savePoseFileName" value="/home/yh/uts_2d/global_pose.txt"/>
 		<param name="saveFreq" value="20"/>
+        <param name="saveMapName" value="/home/yh/uts_2d/origin_map.vtk"/>
 	</node>
 <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ethzasl_icp_mapper)/launch/2D_scans/uts.rviz" output="screen"/>
 </launch>

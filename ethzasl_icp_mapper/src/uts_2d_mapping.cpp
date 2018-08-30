@@ -118,11 +118,12 @@ class Mapper
     int loopCnt = 0;
     int saveFreq;
     string saveScanFileName;
-	
+
 public:
 	Mapper(ros::NodeHandle& n, ros::NodeHandle& pn);
 	~Mapper();
     PM::DataPoints *mapPointCloud; // for saving
+    string saveMapName;
 	
 protected:
 	void gotScan(const sensor_msgs::LaserScan& scanMsgIn);
@@ -173,7 +174,8 @@ Mapper::Mapper(ros::NodeHandle& n, ros::NodeHandle& pn):
     tfListener(ros::Duration(30)),
     saveScanDirName(getParam<string>("saveScanDirName", ".")),
     savePoseFileName(getParam<string>("savePoseFileName", ".")),
-    saveFreq(getParam<int>("saveFreq", 0))
+    saveFreq(getParam<int>("saveFreq", 0)),
+    saveMapName(getParam<string>("saveMapName", "."))
 {
 
 	// Ensure proper states
@@ -866,7 +868,7 @@ int main(int argc, char **argv)
 	Mapper mapper(n, pn);
 	ros::spin();
 
-    mapper.mapPointCloud->save("/home/yh/UTS_2d_August.vtk");
+    mapper.mapPointCloud->save(mapper.saveMapName);
 
 	return 0;
 }

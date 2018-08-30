@@ -22,7 +22,7 @@ Actaully not all the code is needed. I only add some files in [2D_scans](https:/
 
 * Then generate relative poses and raw scans.
 
-* The global poses are saved in `savePoseFileName` and scans in `saveScanDirName`, and `saveFreq` is the frequency of your saving ( 1/20 e.g.)
+* The global poses are saved in `savePoseFileName` and scans in `saveScanDirName`, and `saveFreq` is the frequency of your saving ( 1/20 e.g.). `saveMapName` is where your map saved. Note that when you stop the running program in terminal to exit, please wait a few seconds for saving process. :clock:
 
 * The saved poses are `2+9 column/per row` in `global.txt`. The `9` values are the extention of 3*3 transformation matrix by row. The `2` are relations from this pose to the previous (no use in global).
 
