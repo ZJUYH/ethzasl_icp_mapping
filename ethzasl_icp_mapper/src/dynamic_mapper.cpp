@@ -458,6 +458,8 @@ void Mapper::processCloud(unique_ptr<DP> newPointCloud, const std::string& scann
 		PM::TransformationParameters T_updatedScanner_to_map;
 		PM::TransformationParameters T_updatedScanner_to_cutMap;
 
+        cout<<"-------------------- APPLY --------------------"<<endl;
+
         //???
 //		ROS_INFO_STREAM("[ICP] Computing - reading: " << newPointCloud->getNbPoints() << ", reference: " << icp.getInternalMap().getNbPoints() );
 		//T_updatedScanner_to_map = icp(*newPointCloud, T_scanner_to_map);

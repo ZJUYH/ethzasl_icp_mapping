@@ -6,16 +6,16 @@ wget http://pr.willowgarage.com/data/gmapping/small_loop_prf.bag
 -->
 
 <launch>
-	<param name="use_sim_time" value="true"/>
+	<param name="/use_sim_time" value="true"/>
 	<node name="uts_2d_mapping" type="uts_2d_mapping" pkg="ethzasl_icp_mapper" output="screen" >
-		<remap from="scan" to="/base_scan" />
+		<remap from="scan" to="/scan" />
 		<!--remap from="cloud_in" to="/point_cloud" /-->
 		<param name="subscribe_scan" value="true" />
 		<param name="subscribe_cloud" value="false" />
 		<param name="icpConfig" value="$(find ethzasl_icp_mapper)/launch/2D_scans/icp.yaml" />
 		<param name="inputFiltersConfig" value="$(find ethzasl_icp_mapper)/launch/2D_scans/input_filters.yaml" />
 		<param name="mapPostFiltersConfig" value="$(find ethzasl_icp_mapper)/launch/2D_scans/map_post_filters.yaml" />
-		<param name="odom_frame" value="/base_laser" />
+		<param name="odom_frame" value="/base_footprint" />
 		<param name="map_frame" value="/map" />
 		<param name="useROSLogger" value="false" />
 		<param name="minOverlap" value="0.5" /> 
@@ -23,10 +23,10 @@ wget http://pr.willowgarage.com/data/gmapping/small_loop_prf.bag
 		<param name="minMapPointCount" value="1000" /> 
 		<param name="minReadingPointCount" value="200" /> 
 
-        <param name="saveScanDirName" value="/home/yh/uts_2d/test/"/>
-        <param name="savePoseFileName" value="/home/yh/uts_2d/global_pose.txt"/>
-		<param name="saveFreq" value="20"/>
-        <param name="saveMapName" value="/home/yh/uts_2d/origin_map.vtk"/>
+        <param name="saveScanDirName" value="/home/yh/jz_2d/raw_scan/"/>
+        <param name="savePoseFileName" value="/home/yh/jz_2d/global_pose.txt"/>
+		<param name="saveFreq" value="100"/>
+        <param name="saveMapName" value="/home/yh/jz_2d/origin_map.vtk"/>
 	</node>
 <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ethzasl_icp_mapper)/launch/2D_scans/uts.rviz" output="screen"/>
 </launch>

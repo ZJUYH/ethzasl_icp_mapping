@@ -263,10 +263,18 @@ Mapper::Mapper(ros::NodeHandle& n, ros::NodeHandle& pn):
 	}
 
 	// topics and services initialization
-	if (getParam<bool>("subscribe_scan", true))
-        scanSub = n.subscribe("/down_laser/scan", inputQueueSize, &Mapper::gotScan, this);
-	if (getParam<bool>("subscribe_cloud", true))
+//	if (getParam<bool>("subscribe_scan", true))
+        // uts
+//        scanSub = n.subscribe("/down_laser/scan", inputQueueSize, &Mapper::gotScan, this);
+        // jz
+    if (getParam<bool>("subscribe_scan", true))
+    {
+        cout<<"MMMMM"<<endl;
+        scanSub = n.subscribe("/scan", inputQueueSize, &Mapper::gotScan, this);
+    }
+    if (getParam<bool>("subscribe_cloud", true))
 		cloudSub = n.subscribe("cloud_in", inputQueueSize, &Mapper::gotCloud, this);
+
 	mapPub = n.advertise<sensor_msgs::PointCloud2>("point_map", 2, true);
     cloudPub = n.advertise<sensor_msgs::PointCloud2>("pointCloud", 2, true);
 	outlierPub = n.advertise<sensor_msgs::PointCloud2>("outliers", 2, true);
@@ -329,7 +337,7 @@ void Mapper::gotScan(const sensor_msgs::LaserScan& scanMsgIn)
 //        {
 //            cout<<cloud->features(0, i)<<"  "<<cloud->features(1, i)<<endl;
 //        }
-
+        cout<<"Listened"<<endl;
         processCloud(move(cloud), odomFrame, endScanTime, scanMsgIn.header.seq);
 	}
 }

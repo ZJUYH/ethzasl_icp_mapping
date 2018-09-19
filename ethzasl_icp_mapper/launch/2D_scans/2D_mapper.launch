@@ -8,7 +8,7 @@ wget http://pr.willowgarage.com/data/gmapping/small_loop_prf.bag
 <launch>
 	<param name="use_sim_time" value="true"/>
 	<node name="mapper" type="mapper" pkg="ethzasl_icp_mapper" output="screen" >
-		<remap from="scan" to="/base_scan" />
+		<remap from="scan" to="/scan" />
 		<!--remap from="cloud_in" to="/point_cloud" /-->
 		<param name="subscribe_scan" value="true" />
 		<param name="subscribe_cloud" value="false" />

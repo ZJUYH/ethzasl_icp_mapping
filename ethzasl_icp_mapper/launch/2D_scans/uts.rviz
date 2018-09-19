@@ -14,7 +14,7 @@ Panels:
         - /Grid1
         - /PointCloud23
       Splitter Ratio: 0.5
-    Tree Height: 776
+    Tree Height: 348
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -262,10 +262,10 @@ Visualization Manager:
         Z: -33.1016
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.3548
+      Pitch: 1.3598
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.77456
+      Yaw: 2.75456
     Saved: ~
 Window Geometry:
   Displays:
