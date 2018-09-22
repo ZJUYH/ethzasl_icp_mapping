@@ -1,6 +1,6 @@
 - SimpleSensorNoiseDataPointsFilter
 - SurfaceNormalDataPointsFilter:
-    knn: 5
+    knn: 10
     keepNormals: 1
     keepDensities: 1
 #- MaxDensityDataPointsFilter:

@@ -211,7 +211,7 @@ Mapper::Mapper(ros::NodeHandle& n, ros::NodeHandle& pn):
 	T_cutMap_to_map(PM::TransformationParameters::Identity(4, 4)),
 	publishStamp(ros::Time::now()),
   tfListener(ros::Duration(30)),
-	eps(0.0001)
+    eps(0.0001)
 {
 
 	// Ensure proper states
