@@ -116,3 +116,12 @@ target_link_libraries(uts_2d_loop ${catkin_LIBRARIES} ${libpointmatcher_LIBRARIE
 add_executable(uts_2d_alignment src/uts_2d_alignment.cpp )
 add_dependencies(uts_2d_alignment ${PROJECT_NAME}_gencpp)
 target_link_libraries(uts_2d_alignment ${catkin_LIBRARIES} ${libpointmatcher_LIBRARIES})
+
+add_executable(record_mapping src/record_mapping.cpp )
+add_dependencies(record_mapping ${PROJECT_NAME}_gencpp)
+target_link_libraries(record_mapping ${catkin_LIBRARIES} ${libpointmatcher_LIBRARIES})
+
+
+
+
+
