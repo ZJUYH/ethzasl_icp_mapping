@@ -1,9 +1,11 @@
-- SurfaceNormalDataPointsFilter:
-    knn: 10
-    epsilon: 3.16
-    keepNormals: 1
-    keepDensities: 1
-- MaxDensityDataPointsFilter:
-    maxDensity: 10000
+#- CutAtDescriptorThresholdDataPointsFilter:
+#    descName: probabilityStatic
+#    useLargerThan: 0
+#    threshold: 0.2
 #- MaxPointCountDataPointsFilter:
-#    maxCount: 600000
+#    maxCount: 99999999999
+- OctreeGridDataPointsFilter:
+    buildParallel: 1
+    maxPointByNode: 1
+    maxSizeByNode: 0.3
+    samplingMethod: 3

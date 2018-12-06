@@ -13,22 +13,26 @@ wget http://pr.willowgarage.com/data/gmapping/small_loop_prf.bag
 		<param name="subscribe_scan" value="false" />
 		<param name="subscribe_cloud" value="true" />
 
-		<param name="icpConfig" value="$(find ethzasl_icp_mapper)/launch/2D_scans/icp.yaml" />
+		<!--param name="icpConfig" value="$(find ethzasl_icp_mapper)/launch/2D_scans/icp.yaml" />
 		<param name="inputFiltersConfig" value="$(find ethzasl_icp_mapper)/launch/2D_scans/input_filters.yaml" />
-		<param name="mapPostFiltersConfig" value="$(find ethzasl_icp_mapper)/launch/2D_scans/map_post_filters.yaml" />
+		<param name="mapPostFiltersConfig" value="$(find ethzasl_icp_mapper)/launch/2D_scans/map_post_filters.yaml" /-->
+
+		<param name="icpConfig" value="$(find ethzasl_icp_mapper)/launch/velodyne_puck/icp_dynamic.yaml" />
+		<param name="inputFiltersConfig" value="$(find ethzasl_icp_mapper)/launch/velodyne_puck/input_filters.yaml" />
+		<param name="mapPostFiltersConfig" value="$(find ethzasl_icp_mapper)/launch/velodyne_puck/quadrator/mapPost_filters.yaml" />
 
 		<param name="odom_frame" value="/velodyne" />
 		<param name="map_frame" value="/map" />
 		<param name="useROSLogger" value="false" />
-		<param name="minOverlap" value="0.5" /> 
+		<param name="minOverlap" value="0.1" /> 
 		<param name="maxOverlapToMerge" value="0.9" /> 
 		<param name="minMapPointCount" value="100000" /> 
-		<param name="minReadingPointCount" value="50" /--> 
+		<param name="minReadingPointCount" value="50" /> 
 
-        <!--param name="saveScanDirName" value="/home/yh/jz_2d/raw_scan/"/>
-        <param name="savePoseFileName" value="/home/yh/jz_2d/global_pose.txt"/>
-		<param name="saveFreq" value="100"/>
-        <param name="saveMapName" value="/home/yh/jz_2d/origin_map.vtk"/>
+        <param name="saveScanDirName" value="/home/yh/YQ21/2018/12.06/scan/"/>
+        <param name="savePoseFileName" value="/home/yh/YQ21/2018/12.06/global_pose.txt"/>
+		<param name="saveFreq" value="1"/>
+        <param name="saveMapName" value="/home/yh/YQ21/2018/12.06/global_pose.vtk"/>
 
 
 	</node>
