@@ -129,8 +129,6 @@ class Mapper
 	const float sensorMaxRange; //!< in meter. Maximum reading distance of the laser. Used to cut the global map before matching.
 
 
-	
-
 	PM::TransformationParameters T_odom_to_map;
 	PM::TransformationParameters T_cutMap_to_map;
 	boost::thread publishThread;
@@ -142,6 +140,9 @@ class Mapper
 	tf::TransformBroadcaster tfBroadcaster;
 
     const float eps;
+
+    // yh
+    ofstream saverPose;
 	
 public:
 	Mapper(ros::NodeHandle& n, ros::NodeHandle& pn);
@@ -518,6 +519,25 @@ void Mapper::processCloud(unique_ptr<DP> newPointCloud, const std::string& scann
 		
         ROS_DEBUG_STREAM("[ICP] T_odom_to_map:\n" << T_odom_to_map);
 
+
+
+
+
+
+        // save the poses for Zhenhua Project
+        saverPose.open("/home/yh/pose_test.txt", std::ios::app);
+        saverPose << stamp.toSec() << endl;
+        saverPose << T_odom_to_map(0,0) << "    " << T_odom_to_map(0,1) << "    " << T_odom_to_map(0,2) << "    " << T_odom_to_map(0,3) << endl;
+        saverPose << T_odom_to_map(1,0) << "    " << T_odom_to_map(1,1) << "    " << T_odom_to_map(1,2) << "    " << T_odom_to_map(1,3) << endl;
+        saverPose << T_odom_to_map(2,0) << "    " << T_odom_to_map(2,1) << "    " << T_odom_to_map(2,2) << "    " << T_odom_to_map(2,3) << endl;
+        saverPose << T_odom_to_map(3,0) << "    " << T_odom_to_map(3,1) << "    " << T_odom_to_map(3,2) << "    " << T_odom_to_map(3,3) << endl;
+        saverPose.close();
+
+
+
+
+
+
 		// Publish odometry
 		if (odomPub.getNumSubscribers())
 		{
@@ -526,8 +546,6 @@ void Mapper::processCloud(unique_ptr<DP> newPointCloud, const std::string& scann
 		// Publish error on odometry
 		if (odomErrorPub.getNumSubscribers())
 			odomErrorPub.publish(PointMatcher_ros::eigenMatrixToOdomMsg<float>(T_odom_to_map, mapFrame, stamp));
-
-		
 
 		// check if news points should be added to the map
 		if (
@@ -1238,13 +1256,13 @@ bool Mapper::reloadallYaml(std_srvs::Empty::Request &req, std_srvs::Empty::Respo
 // Main function supporting the Mapper class
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "mapper");
+    ros::init(argc, argv, "zhenhua_mapping");
 	ros::NodeHandle n;
 	ros::NodeHandle pn("~");
 	Mapper mapper(n, pn);
 	ros::spin();
 
-//    mapper.mapPointCloud->save("/home/yh/0713.vtk");
+    mapper.mapPointCloud->save("/home/yh/map_test.vtk");
 
 	return 0;
 }

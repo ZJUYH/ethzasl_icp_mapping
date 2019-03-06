@@ -121,7 +121,9 @@ add_executable(record_mapping src/record_mapping.cpp )
 add_dependencies(record_mapping ${PROJECT_NAME}_gencpp)
 target_link_libraries(record_mapping ${catkin_LIBRARIES} ${libpointmatcher_LIBRARIES})
 
-
+add_executable(zhenhua_mapping src/zhenhua_mapping.cpp )
+add_dependencies(zhenhua_mapping ${PROJECT_NAME}_gencpp)
+target_link_libraries(zhenhua_mapping ${catkin_LIBRARIES} ${libpointmatcher_LIBRARIES})
 
 
 

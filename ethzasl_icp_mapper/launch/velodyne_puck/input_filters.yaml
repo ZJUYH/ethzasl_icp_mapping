@@ -8,4 +8,4 @@
 - ObservationDirectionDataPointsFilter
 - OrientNormalsDataPointsFilter 
 - MaxDensityDataPointsFilter:
-    maxDensity: 10000.0
+    maxDensity: 100.0
