@@ -51,9 +51,11 @@ namespace PointMatcher_ros
 			}
 			else if (name == "rgb" || name == "rgba")
 			{
-				descLabels.push_back(Label("color", (name == "rgba") ? 4 : 3));
+				descLabels.push_back(Label("color", (name == "rgba") ? 4 : 3));                     
 				isFeature.push_back(false);
-			}
+                                // 2020.10.26 try test on new laptop for zhenhua
+//                                fieldTypes.push_back(PM_types::DESCRIPTOR);
+                        }
 			else if ((it+1) != rosMsg.fields.end() && it->name == "normal_x" && (it+1)->name == "normal_y")
 			{
 				if ((it+2) != rosMsg.fields.end() && (it+2)->name == "normal_z")
@@ -87,17 +89,19 @@ namespace PointMatcher_ros
 				it += 1;
 				isFeature.push_back(false);
 				fieldTypes.push_back(PM_types::TIME);
-				fieldTypes.push_back(PM_types::TIME);
+                                fieldTypes.push_back(PM_types::TIME);
 			}
 			//else if (name == "stamps")
 			else if (name == "time")
 			{
-			  timeLabels.push_back(Label(name, count));
-        isFeature.push_back(false);
+                            timeLabels.push_back(Label(name, count));
+                            isFeature.push_back(false);
+                            // 2020.10.26 try test on new laptop for zhenhua
+//                            fieldTypes.push_back(PM_types::DESCRIPTOR);
 			}
 			else
 			{
-				descLabels.push_back(Label(name, count));
+                                descLabels.push_back(Label(name, count));
 				isFeature.push_back(false);
 				fieldTypes.push_back(PM_types::DESCRIPTOR);
 			}
@@ -105,7 +109,24 @@ namespace PointMatcher_ros
 
 		featLabels.push_back(Label("pad", 1));
 		assert(isFeature.size() == rosMsg.fields.size());
-		assert(fieldTypes.size() == rosMsg.fields.size());
+
+                // shanghai debug
+//                cout<<fieldTypes.size()<<endl;
+//                int ss = fieldTypes.size();
+//                for(int i=0; i<ss; i++)
+//                {
+//                    cout<<fieldTypes.at(i)<<endl;
+//                }
+
+//                cout<<rosMsg.fields.size()<<endl;
+//                int sss = rosMsg.fields.size();
+//                for(int i=0; i<sss; i++)
+//                {
+//                    cout<<rosMsg.fields.at(i)<<endl;
+//                }
+
+
+                assert(fieldTypes.size() == rosMsg.fields.size());
 		
 		// create cloud
 		const unsigned pointCount(rosMsg.width * rosMsg.height);

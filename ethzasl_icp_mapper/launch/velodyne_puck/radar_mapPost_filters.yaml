@@ -1,0 +1,19 @@
+#- CutAtDescriptorThresholdDataPointsFilter:
+#    descName: probabilityStatic
+#    useLargerThan: 0
+#    threshold: 0.2
+#- MaxPointCountDataPointsFilter:
+#    maxCount: 99999999999
+- BoundingBoxDataPointsFilter:
+    xMin: -inf
+    xMax: inf
+    yMin: -inf
+    yMax: inf
+    zMin: -10
+    zMax: inf
+    removeInside: 0
+- OctreeGridDataPointsFilter:
+    buildParallel: 1
+    maxPointByNode: 1
+    maxSizeByNode: 0.3
+    samplingMethod: 3

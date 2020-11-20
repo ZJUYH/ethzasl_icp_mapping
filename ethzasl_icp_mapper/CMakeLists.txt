@@ -125,5 +125,8 @@ add_executable(zhenhua_mapping src/zhenhua_mapping.cpp )
 add_dependencies(zhenhua_mapping ${PROJECT_NAME}_gencpp)
 target_link_libraries(zhenhua_mapping ${catkin_LIBRARIES} ${libpointmatcher_LIBRARIES})
 
+add_executable(radar_mapping src/radar_mapping.cpp )
+add_dependencies(radar_mapping ${PROJECT_NAME}_gencpp)
+target_link_libraries(radar_mapping ${catkin_LIBRARIES} ${libpointmatcher_LIBRARIES})
 
 
