@@ -10,7 +10,7 @@ referenceDataPointsFilters:
 
 matcher:
   KDTreeMatcher:
-    knn: 10
+    knn: 5
     maxDist: 3.0
     epsilon: 0
 
@@ -24,7 +24,8 @@ outlierFilters:
  #    descName: probabilityStatic
 
 errorMinimizer:
-  PointToPlaneErrorMinimizer
+  #PointToPlaneErrorMinimizer
+  PointToPointErrorMinimizer
 
 transformationCheckers:
   - DifferentialTransformationChecker:

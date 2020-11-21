@@ -108,7 +108,10 @@ class Mapper
 	
 	tf::TransformListener tfListener;
 	tf::TransformBroadcaster tfBroadcaster;
-	
+
+	double inten_th;
+	ros::Publisher filtered_cloud_pub;
+
 public:
 	Mapper(ros::NodeHandle& n, ros::NodeHandle& pn);
 	~Mapper();
@@ -160,7 +163,8 @@ Mapper::Mapper(ros::NodeHandle& n, ros::NodeHandle& pn):
 	vtkFinalMapName(getParam<string>("vtkFinalMapName", "finalMap.vtk")),
 	TOdomToMap(PM::TransformationParameters::Identity(4, 4)),
 	publishStamp(ros::Time::now()),
-  tfListener(ros::Duration(30))
+  tfListener(ros::Duration(30)),
+  inten_th(getParam<double>("inten_th", 0))
 {
 
 	// Ensure proper states
@@ -268,6 +272,9 @@ Mapper::Mapper(ros::NodeHandle& n, ros::NodeHandle& pn):
 
 	// refreshing tf transform thread
 	publishThread = boost::thread(boost::bind(&Mapper::publishLoop, this, tfRefreshPeriod));
+
+	filtered_cloud_pub = n.advertise<sensor_msgs::PointCloud2>("filtered_cloud", 2, true);
+
 }
 
 Mapper::~Mapper()
@@ -320,12 +327,35 @@ void Mapper::gotScan(const sensor_msgs::LaserScan& scanMsgIn)
 }
 
 void Mapper::gotCloud(const sensor_msgs::PointCloud2& cloudMsgIn)
-{
+{	
+
+	// filter by intensity
+	DP cloud_in  = PointMatcher_ros::rosMsgToPointMatcherCloud<float>(cloudMsgIn);
+
+	DP cloud_temp = cloud_in.createSimilarEmpty();
+	int intensity_Line = cloud_in.getDescriptorStartingRow("intensity");
+
+	int newCnt = 0;
+	for(int i=0; i<cloud_in.features.cols(); i++)
+	{
+		if(cloud_in.descriptors(intensity_Line, i) >= this->inten_th)
+		{
+			cloud_temp.setColFrom(newCnt, cloud_in, i);
+			newCnt++;
+		}
+	}
+	cloud_temp.conservativeResize(newCnt);
+	cloud_in = cloud_temp;
+
+	filtered_cloud_pub.publish(PointMatcher_ros::pointMatcherCloudToRosMsg<float>(cloud_in, "radar", ros::Time::now()));
+
 	if(localizing)
 	{
-		unique_ptr<DP> cloud(new DP(PointMatcher_ros::rosMsgToPointMatcherCloud<float>(cloudMsgIn)));
+		// unique_ptr<DP> cloud(new DP(PointMatcher_ros::rosMsgToPointMatcherCloud<float>(cloudMsgIn)));
+		unique_ptr<DP> cloud(new DP(cloud_in));
 		processCloud(move(cloud), cloudMsgIn.header.frame_id, cloudMsgIn.header.stamp, cloudMsgIn.header.seq);
 	}
+
 }
 
 struct BoolSetter

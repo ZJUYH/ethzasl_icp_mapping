@@ -5,11 +5,11 @@
     xMax: 20
     yMin: -20
     yMax: 20
-    zMin: 0
+    zMin: -2
     zMax: inf
     removeInside: 0
 - SurfaceNormalDataPointsFilter:
-    knn: 10
+    knn: 5
     epsilon: 0
     keepNormals: 1
     keepDensities: 1
